@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="SLICKOIL environmental incident analysis workstation"
+    />
+    <title>SLICKOIL</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="landing-screen" id="landing-screen">
+      <section class="landing-panel" aria-labelledby="landing-title">
+        <a class="brand landing-brand" href="#" aria-label="SLICKOIL home">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <span>SLICKOIL</span>
+        </a>
+        <h1 id="landing-title">SLICKOIL</h1>
+        <p class="landing-subtitle">Oil spill detection, source inference and drift forecasting</p>
+        <p class="landing-description">Sentinel-1 SAR detection, physics-based source inference, AIS-assisted investigation, and probabilistic drift forecasting.</p>
+        <button class="launch-button" id="launch-analysis" type="button">Launch analysis</button>
+        <p class="landing-note">Decision-support system — attribution rankings are investigative prioritization, not proof.</p>
+      </section>
+    </main>
+
+    <div id="dashboard" hidden>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="SLICKOIL home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>SLICKOIL</span>
+      </a>
+      <div class="incident-title">
+        <span class="eyebrow">Active incident</span>
+        <label class="incident-selector-label" for="incident-selector">Incident</label>
+        <select id="incident-selector" aria-label="Select incident" disabled>
+          <option>Loading incidents…</option>
+        </select>
+        <strong id="incident-name">Loading incident…</strong>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="reset-view" type="button" title="Reset map view" aria-label="Reset map view">⌖</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="pipeline-panel" aria-label="Analysis pipeline">
+        <div class="panel-heading">
+          <span class="eyebrow">Analysis chain</span>
+          <span class="run-time" id="run-time">—</span>
+        </div>
+        <ol class="stage-list" id="stage-list"></ol>
+        <section class="demo-guide" id="demo-guide" hidden aria-labelledby="demo-guide-title">
+          <span class="eyebrow">Precomputed demonstration</span>
+          <h2 id="demo-guide-title">Scene</h2>
+          <p id="demo-guide-copy"></p>
+        </section>
+        <div class="model-note">
+          <span class="note-icon">i</span>
+          <p><strong>Decision support only</strong><br />Model support is not proof of origin or discharge.</p>
+        </div>
+      </aside>
+
+      <section class="map-shell" aria-label="Incident map">
+        <div class="map-toolbar">
+          <div>
+            <span class="eyebrow" id="map-context">Sentinel-1 scene</span>
+            <h1 id="scene-time">Observation</h1>
+          </div>
+          <div class="layer-controls" aria-label="Map layers">
+            <label><input type="checkbox" data-layer="detection" checked /> <span>SAR slick</span></label>
+            <label><input type="checkbox" data-layer="posterior" checked /> <span>Source posterior</span></label>
+            <label><input type="checkbox" data-layer="vessels" checked /> <span>AIS tracks</span></label>
+            <label><input type="checkbox" data-layer="forecast" checked /> <span>Forecast</span></label>
+          </div>
+        </div>
+
+        <div class="map-frame">
+          <svg id="incident-map" viewBox="0 0 1000 690" role="img" aria-labelledby="map-title map-description">
+            <title id="map-title">Oil spill analysis map</title>
+            <desc id="map-description">Detected slick, source posterior, vessel tracks, forecast plume, and coastline risk.</desc>
+            <rect width="1000" height="690" fill="#e9f2f7" />
+            <g id="forecast-layer" class="map-layer"></g>
+            <g id="posterior-layer" class="map-layer"></g>
+            <g id="vessel-layer" class="map-layer"></g>
+            <g id="detection-layer" class="map-layer"></g>
+            <g id="coast-layer"></g>
+            <g id="analysis-cue-layer"></g>
+            <g id="map-labels"></g>
+          </svg>
+          <figure class="demo-asset-viewer" id="demo-asset-viewer" hidden>
+            <div class="demo-asset-heading"><strong id="demo-asset-title">SAR scene input</strong></div>
+            <div class="demo-asset-tabs" id="demo-asset-tabs" aria-label="Raster view">
+              <button type="button" data-demo-asset="sar">SAR</button>
+              <button type="button" data-demo-asset="probability">Probability</button>
+              <button type="button" data-demo-asset="mask">Mask</button>
+              <button type="button" data-demo-asset="overlay">Overlay</button>
+            </div>
+            <div class="demo-asset-canvas">
+              <img id="demo-asset-image" alt="" />
+              <img class="demo-mask-overlay" id="demo-mask-overlay" alt="" hidden />
+            </div>
+            <figcaption id="demo-asset-caption"></figcaption>
+          </figure>
+          <div class="map-scale" id="map-scale">Schematic screen geometry · not to scale</div>
+          <div class="coordinate-readout" id="coordinate-readout">19.18°N · 72.48°E</div>
+          <div class="legend" id="legend"></div>
+          <div class="stage-empty" id="stage-empty" hidden></div>
+        </div>
+
+        <div class="forecast-timeline" aria-label="Forecast horizon selector">
+          <div class="timeline-label">
+            <span class="eyebrow">Forecast horizon</span>
+            <strong id="valid-time">—</strong>
+          </div>
+          <div class="horizon-buttons" id="horizon-buttons"></div>
+          <div class="confidence-key">Weighted ensemble extent</div>
+        </div>
+        <div class="stage-action-bar">
+          <span id="stage-status">Precomputed demonstration</span>
+          <div class="demo-guide-actions">
+            <button class="guide-back" id="guide-back" type="button">Back</button>
+            <button class="guide-next" id="guide-next" type="button">Next: Detection</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="insight-panel" aria-label="Incident insights">
+        <section class="summary-card">
+          <div class="card-kicker" id="summary-kicker">Detection</div>
+          <div class="metric-pair" id="summary-metrics">
+            <div><strong id="slick-area">—</strong><span>slick area</span></div>
+            <div><strong id="detection-confidence">—</strong><span>confidence</span></div>
+          </div>
+          <div class="meta-row"><span>Scene</span><strong id="scene-id">—</strong></div>
+          <div class="meta-row" id="scene-sensor-row"><span>Sensor</span><strong id="scene-sensor">—</strong></div>
+          <div class="meta-row" id="orientation-row"><span>Orientation</span><strong id="orientation">—</strong></div>
+          <div class="meta-row" id="threshold-row" hidden><span>Threshold</span><strong id="threshold">—</strong></div>
+          <div class="meta-row" id="pixel-count-row" hidden><span>Oil pixels</span><strong id="pixel-count">—</strong></div>
+          <img class="detection-preview" id="detection-preview" alt="Precomputed synthetic detection thumbnail" hidden />
+        </section>
+
+        <section class="source-card">
+          <div class="section-title">
+            <div><h2>Source / Hindcast</h2></div>
+            <span class="uncalibrated">Uncalibrated</span>
+          </div>
+          <div class="source-stats">
+            <div><span>50% region</span><strong id="region-size">—</strong></div>
+            <div><span>Release P50</span><strong id="release-time">—</strong></div>
+          </div>
+          <div class="funnel" id="hindcast-funnel"></div>
+          <p class="semantics" id="posterior-semantics"></p>
+        </section>
+
+        <section class="vessel-card">
+          <div class="section-title">
+            <div><h2 id="ais-heading">AIS candidates</h2></div>
+            <button class="text-button" id="toggle-candidates" type="button">All candidates</button>
+          </div>
+          <div class="candidate-list" id="candidate-list"></div>
+        </section>
+
+        <section class="coast-card">
+          <div class="section-title">
+            <div><h2>Coastal impact</h2></div>
+            <span class="risk-badge" id="risk-level">—</span>
+          </div>
+          <div class="risk-meter"><span id="risk-meter-fill"></span></div>
+          <div class="coast-details">
+            <div><span>Highest contact support</span><strong id="contact-support">—</strong></div>
+            <div><span>Earliest plausible</span><strong id="coast-arrival">—</strong></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <div class="loading" id="loading" role="status">Loading cached incident analysis…</div>
+    </div>
+    <script src="app.js" defer></script>
+  </body>
+</html>
